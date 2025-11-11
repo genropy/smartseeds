@@ -85,16 +85,14 @@ _POP_EXTRACT_OPTIONS = {'slice_prefix': True, 'pop': True, 'is_list': False}
 
 Instead of creating new dicts on every call, we reuse pre-defined constants.
 
-### 3. Backwards Compatibility
+### 3. Type Safety
 
-The implementation maintains **100% compatibility** with the original Genropy implementation while adding:
-- Full type hints
+The implementation provides complete type safety:
+- Full type hints for all functions
 - `@wraps` for metadata preservation
-- Support for functions (not just methods)
-- Better error handling
-- Performance improvements
-
-See [genropy_comparison/](../../genropy_comparison/) for detailed comparison (not published).
+- Support for both functions and methods
+- Type-preserving decorator pattern
+- Compatible with mypy and pyright
 
 ## Execution Flow
 
