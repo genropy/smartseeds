@@ -12,9 +12,9 @@ SmartSeeds is a lightweight, zero-dependency Python library providing core utili
 ## Features
 
 - **`extract_kwargs`**: Decorator for extracting and grouping keyword arguments by prefix
-- **`dictExtract`**: Utility for extracting values from dictionaries with prefix matching
-- **`Bag`**: Dictionary with attribute access (`bag.key` instead of `bag['key']`)
+- **Three flexible styles**: Prefix style, dict style, and boolean activation
 - **Zero dependencies**: Pure Python standard library
+- **Full type hints**: Complete typing support
 
 ## Installation
 
@@ -26,7 +26,7 @@ pip install smartseeds
 
 ### extract_kwargs Decorator
 
-Extract kwargs by prefix into separate parameter groups:
+Extract kwargs by prefix into separate parameter groups - supports three convenient styles:
 
 ```python
 from smartseeds import extract_kwargs
@@ -37,7 +37,7 @@ def setup_service(name, logging_kwargs=None, cache_kwargs=None, **kwargs):
     print(f"Cache config: {cache_kwargs}")
     print(f"Other: {kwargs}")
 
-# All these work:
+# Style 1: Prefix style (most explicit)
 setup_service(
     name="api",
     logging_level="INFO",      # → logging_kwargs={'level': 'INFO'}
@@ -46,47 +46,22 @@ setup_service(
     timeout=30                 # → kwargs={'timeout': 30}
 )
 
-# Or use dict style:
+# Style 2: Dict style (compact)
 setup_service(
     name="api",
     logging={'level': 'INFO', 'format': 'json'},
     cache={'ttl': 300}
 )
+
+# Style 3: Boolean activation (use defaults)
+setup_service(
+    name="api",
+    logging=True,  # → logging_kwargs={} (empty dict for defaults)
+    cache=True
+)
 ```
 
-### Bag - Dict with Attribute Access
-
-```python
-from smartseeds import Bag
-
-config = Bag(host='localhost', port=8000)
-print(config.host)  # → 'localhost'
-print(config.port)  # → 8000
-
-# Works like a dict too
-print(config['host'])  # → 'localhost'
-config['timeout'] = 30
-```
-
-### dictExtract Utility
-
-```python
-from smartseeds import dictExtract
-
-params = {
-    'api_host': 'localhost',
-    'api_port': 8000,
-    'db_name': 'mydb',
-    'timeout': 30
-}
-
-# Extract all api_* parameters
-api_config = dictExtract(params, 'api_', slice_prefix=True, pop=True)
-# → {'host': 'localhost', 'port': 8000}
-# params now: {'db_name': 'mydb', 'timeout': 30}
-```
-
-## Use in smart* Ecosystem
+### Use in smart* Ecosystem
 
 SmartSeeds is designed to be used by other smart* tools:
 
@@ -102,6 +77,36 @@ class Switcher:
             self.plug('logging', **logging_kwargs)
         if async_kwargs:
             self.plug('async', **async_kwargs)
+```
+
+## Why extract_kwargs?
+
+Traditional approaches to nested configuration have problems:
+
+**❌ Explicit parameters (verbose)**
+```python
+def connect(host, port, logging_level=None, logging_format=None, logging_file=None):
+    logger = Logger(level=logging_level, format=logging_format, file=logging_file)
+```
+
+**❌ Catch-all kwargs (unclear)**
+```python
+def connect(host, port, **kwargs):
+    # What kwargs are valid? Users don't know!
+    logger = Logger(**kwargs)
+```
+
+**✅ extract_kwargs (clear + flexible)**
+```python
+@extract_kwargs(logging=True)
+def connect(host, port, logging_kwargs=None):
+    if logging_kwargs:
+        logger = Logger(**logging_kwargs)
+
+# All these work and are clear:
+connect('localhost', 8000, logging_level='INFO')
+connect('localhost', 8000, logging={'level': 'INFO'})
+connect('localhost', 8000, logging=True)
 ```
 
 ## Documentation

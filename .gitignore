@@ -49,3 +49,4 @@ ENV/
 .mypy_cache/
 .dmypy.json
 dmypy.json
+genropy_comparison/

@@ -1,87 +1,26 @@
 """
 Dictionary utilities for SmartSeeds.
 
-Provides utilities for dict manipulation and access patterns.
+Provides utilities for dict manipulation used by decorators.
 """
 
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 
 
-def dictExtract(
-    source: Dict[str, Any],
-    prefix: str,
-    slice_prefix: bool = True,
-    pop: bool = False,
-) -> Dict[str, Any]:
-    """
-    Extract entries from a dictionary that match a given prefix.
+def dictExtract(mydict, prefix, pop=False, slice_prefix=True, is_list=False):
+    """Return a dict of the items with keys starting with prefix.
 
-    Args:
-        source: Source dictionary to extract from
-        prefix: Prefix to match keys against
-        slice_prefix: If True, remove prefix from keys in result
-        pop: If True, remove matching keys from source
+    :param mydict: sourcedict
+    :param prefix: the prefix of the items you need to extract
+    :param pop: removes the items from the sourcedict
+    :param slice_prefix: shortens the keys of the output dict removing the prefix
+    :param is_list: reserved for future use (currently not used)
+    :returns: a dict of the items with keys starting with prefix"""
 
-    Returns:
-        Dictionary with matching entries
+    # FIXME: the is_list parameter is never used.
 
-    Example:
-        >>> params = {'api_host': 'localhost', 'api_port': 8000, 'timeout': 30}
-        >>> api_config = dictExtract(params, 'api_', slice_prefix=True, pop=True)
-        >>> api_config
-        {'host': 'localhost', 'port': 8000}
-        >>> params
-        {'timeout': 30}
-    """
-    result = {}
+    lprefix = len(prefix) if slice_prefix else 0
 
-    keys_to_process = list(source.keys())
-    for key in keys_to_process:
-        if key.startswith(prefix):
-            result_key = key[len(prefix):] if slice_prefix else key
-            value = source.pop(key) if pop else source[key]
-            result[result_key] = value
-
-    return result
-
-
-class Bag(dict):
-    """
-    A dictionary that supports attribute-style access.
-
-    Attributes can be accessed via dot notation in addition to dict-style access.
-
-    Example:
-        >>> config = Bag(host='localhost', port=8000)
-        >>> config.host
-        'localhost'
-        >>> config['port']
-        8000
-        >>> config.timeout = 30
-        >>> config['timeout']
-        30
-    """
-
-    def __getattr__(self, name: str) -> Any:
-        """Get attribute via dot notation."""
-        try:
-            return self[name]
-        except KeyError:
-            raise AttributeError(f"'Bag' object has no attribute '{name}'")
-
-    def __setattr__(self, name: str, value: Any) -> None:
-        """Set attribute via dot notation."""
-        self[name] = value
-
-    def __delattr__(self, name: str) -> None:
-        """Delete attribute via dot notation."""
-        try:
-            del self[name]
-        except KeyError:
-            raise AttributeError(f"'Bag' object has no attribute '{name}'")
-
-    def __repr__(self) -> str:
-        """String representation."""
-        # Use dict.items() to avoid recursion since self.__dict__ is self
-        items = ", ".join(f"{k}={v!r}" for k, v in dict.items(self))
-        return f"Bag({items})"
+    cb = mydict.pop if pop else mydict.get
+    reserved_names = ['class']
+    return dict([(k[lprefix:] if not k[lprefix:] in reserved_names else '_%s' % k[lprefix:], cb(k)) for k in list(mydict.keys()) if k.startswith(prefix)])
