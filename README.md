@@ -8,6 +8,8 @@ SmartSeeds is a lightweight, zero-dependency Python library providing core utili
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![PyPI version](https://badge.fury.io/py/smartseeds.svg)](https://badge.fury.io/py/smartseeds)
+[![Documentation Status](https://readthedocs.org/projects/smartseeds/badge/?version=latest)](https://smartseeds.readthedocs.io/en/latest/?badge=latest)
+[![codecov](https://codecov.io/gh/genropy/smartseeds/branch/main/graph/badge.svg)](https://codecov.io/gh/genropy/smartseeds)
 
 ## Features
 
