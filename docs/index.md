@@ -6,11 +6,12 @@
 
 **Essential utilities that grow smart solutions**
 
-SmartSeeds is a lightweight, zero-dependency Python library providing the `extract_kwargs` decorator for the smart* ecosystem (smartswitch, smartasync, etc.). Think of it as the seeds from which smart solutions grow.
+SmartSeeds is a lightweight, zero-dependency Python library providing core utilities for the smart* ecosystem (smartswitch, smartasync, etc.). Think of it as the seeds from which smart solutions grow.
 
 ## Features
 
 - **`extract_kwargs`** - Decorator for extracting and grouping keyword arguments by prefix
+- **`SmartOptions`** - Intelligent options merging with filtering and defaults
 - **Three flexible styles** - Prefix style, dict style, and boolean activation
 - **Zero dependencies** - Pure Python standard library only
 - **Full type hints** - Complete typing support
@@ -55,6 +56,7 @@ user-guide/quickstart
 :caption: User Guide
 
 user-guide/extract-kwargs
+user-guide/smart-options
 user-guide/best-practices
 ```
 

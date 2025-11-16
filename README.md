@@ -14,6 +14,7 @@ SmartSeeds is a lightweight, zero-dependency Python library providing core utili
 ## Features
 
 - **`extract_kwargs`**: Decorator for extracting and grouping keyword arguments by prefix
+- **`SmartOptions`**: Intelligent options merging with filtering and defaults
 - **Three flexible styles**: Prefix style, dict style, and boolean activation
 - **Zero dependencies**: Pure Python standard library
 - **Full type hints**: Complete typing support
@@ -61,6 +62,44 @@ setup_service(
     logging=True,  # → logging_kwargs={} (empty dict for defaults)
     cache=True
 )
+```
+
+### SmartOptions - Intelligent Option Merging
+
+Merge incoming options with defaults, with automatic filtering:
+
+```python
+from smartseeds import SmartOptions
+
+# Basic merge: incoming overrides defaults
+opts = SmartOptions(
+    incoming={'timeout': 10, 'retries': None},
+    defaults={'timeout': 5, 'retries': 3, 'debug': False}
+)
+print(opts.timeout)  # 10 (from incoming)
+print(opts.retries)  # None (from incoming)
+print(opts.debug)    # False (from defaults)
+
+# Ignore None values
+opts = SmartOptions(
+    incoming={'timeout': None, 'retries': 5},
+    defaults={'timeout': 30, 'retries': 3},
+    ignore_none=True  # Skip None from incoming
+)
+print(opts.timeout)  # 30 (default kept, None ignored)
+print(opts.retries)  # 5 (from incoming)
+
+# Ignore empty collections
+opts = SmartOptions(
+    incoming={'tags': [], 'name': ''},
+    defaults={'tags': ['prod'], 'name': 'default'},
+    ignore_empty=True  # Skip empty strings/lists/dicts
+)
+print(opts.tags)  # ['prod'] (default kept)
+print(opts.name)  # 'default' (default kept)
+
+# Convert back to dict
+config_dict = opts.as_dict()
 ```
 
 ### Use in smart* Ecosystem
