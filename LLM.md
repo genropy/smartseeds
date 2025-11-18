@@ -6,7 +6,6 @@
 
 **SmartSeeds** is a zero-dependency Python library providing essential utilities for the smart* ecosystem (smartroute, smartasync, etc.):
 - `extract_kwargs` decorator for grouping keyword arguments
-- `smartsuper` decorator for automatic parent method calling
 - `SmartOptions` for intelligent option merging
 
 **Repository**: https://github.com/genropy/smartseeds
@@ -16,7 +15,7 @@
 
 ## Core Features
 
-SmartSeeds provides **three primary features**:
+SmartSeeds provides **two primary features**:
 
 ### extract_kwargs Decorator
 
@@ -43,42 +42,6 @@ setup(
 # Cache: {'ttl': 300, 'backend': 'redis'}
 ```
 
-### smartsuper Decorator
-
-Automatically calls parent class methods before or after the decorated method. Supports three usage modes:
-
-**Example**:
-```python
-from smartseeds import smartsuper
-
-# Mode 1: Method decorator (BEFORE)
-class Derived(Base):
-    @smartsuper
-    def setup(self):
-        print("Derived setup")  # Base.setup() called BEFORE this
-
-# Mode 2: Method decorator (AFTER)
-class Derived(Base):
-    @smartsuper.after
-    def cleanup(self):
-        print("Derived cleanup")  # Base.cleanup() called AFTER this
-
-# Mode 3: Class decorator (auto-decorates ALL overrides)
-@smartsuper
-class Derived(Base):
-    def foo(self): pass  # Auto-decorated as BEFORE
-
-    @smartsuper.after  # Explicit AFTER takes precedence
-    def bar(self): pass
-```
-
-**Key Features**:
-- Uses `__new__` to detect class vs method decoration
-- Magic methods (`__dunder__`) are NOT auto-decorated for safety
-- Explicit decoration of magic methods still possible
-- Uses descriptor protocol (`__set_name__`, `__get__`)
-- `__smartsuper_mode__` attribute marks methods as "before" or "after"
-
 ### SmartOptions
 
 Intelligent option merging with filtering support.
@@ -101,7 +64,6 @@ print(opts.retries)  # 3 (from defaults, None ignored)
 ### ✅ IN SCOPE (Public API)
 
 - `extract_kwargs` decorator - Group kwargs by prefix
-- `smartsuper` decorator - Automatic parent method calling
 - `SmartOptions` class - Intelligent option merging
 - Three calling styles for extract_kwargs (prefix, dict, boolean)
 - Full type hints
@@ -141,15 +103,14 @@ The current implementation was tested against the original with comprehensive co
 ```
 smartseeds/
 ├── src/smartseeds/
-│   ├── __init__.py          # Exports: extract_kwargs, smartsuper, SmartOptions
-│   ├── decorators.py        # extract_kwargs and smartsuper decorators
+│   ├── __init__.py          # Exports: extract_kwargs, SmartOptions
+│   ├── decorators.py        # extract_kwargs decorator
 │   └── dict_utils.py        # SmartOptions and internal helpers
 │
 ├── tests/
-│   ├── test_decorators.py   # extract_kwargs tests (12 tests)
-│   ├── test_super.py        # smartsuper tests (24 tests)
-│   └── test_dict_utils.py   # SmartOptions tests (15 tests)
-│   # Total: 51 tests, 98% coverage
+│   ├── test_decorators.py   # extract_kwargs tests
+│   └── test_dict_utils.py   # SmartOptions tests
+│   # Total: 27 tests, 100% coverage
 │
 ├── docs/                    # Sphinx documentation
 │   ├── conf.py
@@ -172,11 +133,11 @@ smartseeds/
 
 ### Current Status
 
-- **Total Tests**: 51 tests across 3 test files
-- **Coverage**: 98% total
+- **Total Tests**: 27 tests across 2 test files
+- **Coverage**: 100% total
   - `__init__.py`: 100%
+  - `decorators.py`: 100%
   - `dict_utils.py`: 100%
-  - `decorators.py`: 97% (3 lines defensive code)
 - **All tests passing**: ✅
 
 ### Test Organization
@@ -191,21 +152,6 @@ class TestExtractKwargsOptions:
 
 class TestExtractKwargsEdgeCases:
     """Edge cases - 5 tests"""
-```
-
-**test_super.py** (24 tests):
-```python
-class TestSmartSuperDecorator:
-    """Method decorator (BEFORE) - 6 tests"""
-
-class TestSmartSuperAfterDecorator:
-    """Method decorator (AFTER) - 5 tests"""
-
-class TestSmartSuperEdgeCases:
-    """Edge cases - 3 tests"""
-
-class TestSmartSuperAllDecorator:
-    """Class decorator - 10 tests"""
 ```
 
 **test_dict_utils.py** (15 tests):
@@ -362,34 +308,25 @@ grep "^version" pyproject.toml
 ```python
 __version__ = "0.2.0"
 
-from .decorators import extract_kwargs, smartsuper
+from .decorators import extract_kwargs
 from .dict_utils import SmartOptions
 
 __all__ = [
     "extract_kwargs",
     "SmartOptions",
-    "smartsuper",
 ]
 ```
 
 ### src/smartseeds/decorators.py
 
-**Two main decorators**:
+**Decorator utilities**:
 
-1. **extract_kwargs** (lines 19-119):
+1. **extract_kwargs**:
    - Full type hints (`TypeVar`, `Callable`, etc.)
    - `@wraps` for metadata preservation
    - Support for methods and functions
    - Optional adapter calling
    - Three extraction styles
-
-2. **smartsuper** (lines 122-269):
-   - Class-based descriptor using `__new__`, `__set_name__`, `__get__`
-   - Detects class vs method decoration with `isinstance(target, type)`
-   - `after` classmethod for AFTER behavior
-   - `all` classmethod (explicit class decorator)
-   - `_decorate_class` internal method for class decoration
-   - `__smartsuper_mode__` attribute for tracking decoration type
 
 ### src/smartseeds/dict_utils.py
 
@@ -565,12 +502,10 @@ Key feedback that shaped the project:
 4. **"il confronto lo metti in un folder non pubblico"** - Keep comparison private
 5. **"si"** - Proceed with comprehensive documentation
 
-### v0.2.0 - smartsuper and SmartOptions
-6. **"ho pensato che sia meglio chiamarlo smartsuper"** - Renamed from `super` to avoid conflicts
-7. **"ok fai cosi e togli i magic"** - Initial request to include magic methods
-8. **"tu cosa consigli?"** - Asked for recommendation on magic methods
-9. **"si"** - Agreed to exclude magic methods from class decorator for safety
-10. **"arriva al 100"** - Push test coverage to 100% (achieved 98%)
+### v0.2.0 - SmartOptions
+6. **"ci serve una namespace per le options"** - Drove creation of `SmartOptions`
+7. **"gestisci none e empty"** - Added filtering flags
+8. **"fammi sapere se serve altro"** - Final review before release
 
 ## For AI Assistants
 
@@ -585,7 +520,6 @@ When working on SmartSeeds:
 
 ### Public API (v0.2.0)
 - **extract_kwargs** - Decorator for grouping kwargs by prefix
-- **smartsuper** - Decorator for automatic parent method calling
 - **SmartOptions** - Class for intelligent option merging
 
 ### Internal Utilities (NOT public)
@@ -593,7 +527,6 @@ When working on SmartSeeds:
 
 ### Key Implementation Details
 - **extract_kwargs**: Maintains 100% backwards compatibility with Genropy original
-- **smartsuper**: Uses `__new__` for universal class/method decoration, skips magic methods in class mode
 - **SmartOptions**: Uses `SimpleNamespace`-like attribute access with filtering
 
 ## Quick Reference
