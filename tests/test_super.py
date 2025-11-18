@@ -498,3 +498,44 @@ class TestSmartSuperAllDecorator:
 
         # foo should be BEFORE, bar should be AFTER
         assert calls == ["Base.foo", "Derived.foo", "Derived.bar", "Base.bar"]
+
+    def test_smartsuper_all_with_both_explicit_decorators(self):
+        """Test that @smartsuper.all handles both @smartsuper and @smartsuper.after."""
+        calls = []
+
+        class Base:
+            def foo(self):
+                calls.append("Base.foo")
+
+            def bar(self):
+                calls.append("Base.bar")
+
+            def baz(self):
+                calls.append("Base.baz")
+
+        @smartsuper.all
+        class Derived(Base):
+            @smartsuper
+            def foo(self):
+                calls.append("Derived.foo")
+
+            @smartsuper.after
+            def bar(self):
+                calls.append("Derived.bar")
+
+            def baz(self):
+                calls.append("Derived.baz")
+
+        d = Derived()
+        d.foo()
+        d.bar()
+        d.baz()
+
+        # foo: already decorated with @smartsuper (BEFORE) - should not double-decorate
+        # bar: decorated with @smartsuper.after (AFTER) - should be respected
+        # baz: not decorated - should be auto-decorated (BEFORE)
+        assert calls == [
+            "Base.foo", "Derived.foo",    # foo: BEFORE
+            "Derived.bar", "Base.bar",    # bar: AFTER
+            "Base.baz", "Derived.baz"     # baz: BEFORE (auto)
+        ]

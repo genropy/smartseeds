@@ -1,5 +1,6 @@
 """Tests for dict utility helpers."""
 
+import pytest
 from smartseeds import SmartOptions
 from smartseeds.dict_utils import filtered_dict, make_opts
 
@@ -94,3 +95,34 @@ class TestSmartOptions:
         assert opts.as_dict()["new_flag"] is True
         del opts.timeout
         assert "timeout" not in opts.as_dict()
+
+    def test_setting_data_attribute(self):
+        """Test that setting _data attribute works correctly."""
+        opts = SmartOptions({"x": 1}, {})
+
+        # This should work without issues
+        opts._data = {"y": 2}
+
+        # Verify it was set
+        assert hasattr(opts, "_data")
+        assert opts._data == {"y": 2}
+
+    def test_deleting_data_attribute_raises_error(self):
+        """Test that deleting _data attribute raises AttributeError."""
+        opts = SmartOptions({"x": 1}, {})
+
+        # Attempting to delete _data should raise AttributeError
+        with pytest.raises(AttributeError, match="_data attribute cannot be removed"):
+            del opts._data
+
+    def test_is_empty_with_non_sequence(self):
+        """Test _is_empty helper with non-sequence values."""
+        # Test with None value (should not be filtered as empty)
+        opts = make_opts({"x": None}, {}, ignore_empty=True)
+        assert hasattr(opts, "x")  # None is not considered empty
+        assert opts.x is None
+
+        # Test with numeric value (should not be filtered)
+        opts = make_opts({"x": 0}, {}, ignore_empty=True)
+        assert hasattr(opts, "x")  # 0 is not considered empty
+        assert opts.x == 0

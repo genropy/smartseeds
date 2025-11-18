@@ -143,6 +143,33 @@ class TestExtractKwargsBasic:
         assert result["cache"] == {"ttl": 300}
 
 
+    def test_non_dict_kwargs_parameter(self):
+        """Test that non-dict values for {prefix}_kwargs are handled gracefully."""
+
+        @extract_kwargs(logging=True)
+        def func(logging_kwargs=None, **kwargs):
+            return logging_kwargs
+
+        # Pass a non-dict value for logging_kwargs (edge case)
+        result = func(logging_kwargs=123, logging_level="INFO")
+
+        # Should convert to dict and merge with extracted kwargs
+        assert result == {"level": "INFO"}
+
+    def test_extract_with_non_true_non_dict_value(self):
+        """Test extraction with values other than True or dict."""
+
+        @extract_kwargs(logging=False)  # Use False instead of True or dict
+        def func(logging_kwargs=None, **kwargs):
+            return {"logging": logging_kwargs, "remaining": kwargs}
+
+        result = func(logging_level="INFO", other="value")
+
+        # Should use default options (don't pop)
+        assert result["logging"] == {"level": "INFO"}
+        assert result["remaining"] == {"logging_level": "INFO", "other": "value"}
+
+
 class TestExtractKwargsAdapter:
     """Test _adapter functionality."""
 
