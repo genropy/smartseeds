@@ -2,7 +2,7 @@
 
 ## What is SmartSeeds?
 
-**SmartSeeds** è una libreria di utilities condivise per l'ecosistema smart* (smartswitch, smartasync, etc.).
+**SmartSeeds** è una libreria di utilities condivise per l'ecosistema smart* (smartroute, smartasync, etc.).
 
 **Motto**: "Essential utilities that grow smart solutions" 🌱
 
@@ -181,23 +181,23 @@ Key test cases:
 6. **No extraction**: `func()` → `logging_kwargs=None`
 7. **Cleanup**: Extracted params removed from kwargs
 
-### Integration with smartswitch
+### Integration with smartroute
 
-SmartSwitch usa `extract_kwargs` per plugin configuration:
+SmartRoute usa `extract_kwargs` per plugin configuration:
 
 ```python
 from smartseeds import extract_kwargs
 
-class Switcher:
+class Service:
     @extract_kwargs(logging=None)
     def __init__(self, logging_kwargs=None):
         if logging_kwargs:
             self.register_plugin(LoggingPlugin, **logging_kwargs)
 
 # Users can choose their preferred style:
-sw = Switcher(logging_level='DEBUG', logging_mode='silent')  # Explicit
-sw = Switcher(logging={'level': 'DEBUG', 'mode': 'silent'})  # Compact
-sw = Switcher(logging=True)  # Defaults
+svc = Service(logging_level='DEBUG', logging_mode='silent')  # Explicit
+svc = Service(logging={'level': 'DEBUG', 'mode': 'silent'})  # Compact
+svc = Service(logging=True)  # Defaults
 ```
 
 ## Current Status

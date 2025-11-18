@@ -4,7 +4,7 @@
 
 ## Project Overview
 
-**SmartSeeds** is a zero-dependency Python library providing essential utilities for the smart* ecosystem (smartswitch, smartcache, etc.):
+**SmartSeeds** is a zero-dependency Python library providing essential utilities for the smart* ecosystem (smartroute, smartasync, etc.):
 - `extract_kwargs` decorator for grouping keyword arguments
 - `smartsuper` decorator for automatic parent method calling
 - `SmartOptions` for intelligent option merging
@@ -535,15 +535,17 @@ sphinx-build -b html docs docs/_build/html -W
 ## Related Projects
 
 **Genro-Libs Ecosystem**:
-- **smartswitch** - Uses `extract_kwargs` for plugin configuration
+- **smartroute** - Uses `extract_kwargs` for plugin configuration
+- **smartasync** - Async utilities
+- **smartpublisher** - Pub/sub messaging
 - **gtext** - Template generation tool
 - **genro-libs** - Meta-repository (private)
 
-**Integration Example** (smartswitch):
+**Integration Example** (smartroute):
 ```python
 from smartseeds import extract_kwargs
 
-class Switcher:
+class Service:
     @extract_kwargs(logging=True, plugins=True)
     def __init__(self, name, logging_kwargs=None, plugins_kwargs=None):
         if logging_kwargs:

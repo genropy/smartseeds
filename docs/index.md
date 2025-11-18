@@ -6,7 +6,7 @@
 
 **Essential utilities that grow smart solutions**
 
-SmartSeeds is a lightweight, zero-dependency Python library providing core utilities for the smart* ecosystem (smartswitch, smartasync, etc.). Think of it as the seeds from which smart solutions grow.
+SmartSeeds is a lightweight, zero-dependency Python library providing core utilities for the smart* ecosystem (smartroute, smartasync, etc.). Think of it as the seeds from which smart solutions grow.
 
 ## Features
 

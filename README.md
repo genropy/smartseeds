@@ -2,14 +2,15 @@
 
 **Essential utilities that grow smart solutions**
 
-SmartSeeds is a lightweight, zero-dependency Python library providing core utilities for the smart* ecosystem (smartswitch, smartasync, etc.). Think of it as the seeds from which smart solutions grow.
+SmartSeeds is a lightweight, zero-dependency Python library providing core utilities for the smart* ecosystem (smartroute, smartasync, etc.). Think of it as the seeds from which smart solutions grow.
 
-[![Part of Genro-Libs](https://img.shields.io/badge/Part%20of-Genro--Libs-blue.svg)](https://github.com/softwell/genro-libs)
+[![PyPI version](https://badge.fury.io/py/smartseeds.svg)](https://badge.fury.io/py/smartseeds)
+[![Tests](https://github.com/genropy/smartseeds/actions/workflows/test.yml/badge.svg)](https://github.com/genropy/smartseeds/actions/workflows/test.yml)
+[![codecov](https://codecov.io/gh/genropy/smartseeds/branch/main/graph/badge.svg)](https://codecov.io/gh/genropy/smartseeds)
+[![Documentation](https://readthedocs.org/projects/smartseeds/badge/?version=latest)](https://smartseeds.readthedocs.io/en/latest/)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![PyPI version](https://badge.fury.io/py/smartseeds.svg)](https://badge.fury.io/py/smartseeds)
-[![Documentation Status](https://readthedocs.org/projects/smartseeds/badge/?version=latest)](https://smartseeds.readthedocs.io/en/latest/?badge=latest)
-[![codecov](https://codecov.io/gh/genropy/smartseeds/branch/main/graph/badge.svg)](https://codecov.io/gh/genropy/smartseeds)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
 ## Features
 
@@ -171,10 +172,10 @@ config_dict = opts.as_dict()
 SmartSeeds is designed to be used by other smart* tools:
 
 ```python
-# In smartswitch, smartasync, etc.
+# In smartroute, smartasync, etc.
 from smartseeds import extract_kwargs
 
-class Switcher:
+class Service:
     @extract_kwargs(logging=True, async_mode=True)
     def __init__(self, name=None, logging_kwargs=None, async_kwargs=None, **kwargs):
         # Plugin configuration extracted automatically
@@ -222,9 +223,9 @@ Full documentation available at: https://smartseeds.readthedocs.io
 
 SmartSeeds is part of the Genropy smart* toolkit:
 
-- [smartswitch](https://github.com/genropy/smartswitch) - Rule-based function dispatch
+- [smartroute](https://github.com/genropy/smartroute) - Instance-scoped routing engine with plugin architecture
 - [smartasync](https://github.com/genropy/smartasync) - Async utilities
-- [smartpub](https://github.com/genropy/smartpub) - Pub/sub messaging
+- [smartpublisher](https://github.com/genropy/smartpublisher) - Pub/sub messaging
 
 ## License
 

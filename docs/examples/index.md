@@ -2,14 +2,14 @@
 
 Real-world examples of using SmartSeeds.
 
-## SmartSwitch Integration
+## SmartRoute Integration
 
-SmartSeeds was designed to support the smart* ecosystem. Here's how it's used in smartswitch:
+SmartSeeds was designed to support the smart* ecosystem. Here's how it's used in smartroute:
 
 ```python
 from smartseeds import extract_kwargs
 
-class Switcher:
+class Service:
     @extract_kwargs(logging=True, async_mode=True, plugins=True)
     def __init__(
         self,
@@ -19,7 +19,7 @@ class Switcher:
         plugins_kwargs=None,
         **kwargs
     ):
-        self.name = name or "switcher"
+        self.name = name or "service"
 
         # Setup logging plugin
         if logging_kwargs:
@@ -35,8 +35,8 @@ class Switcher:
                 self.plug(plugin_name, **plugin_config)
 
 # Usage
-sw = Switcher(
-    name="my_switcher",
+svc = Service(
+    name="my_service",
     logging_level="DEBUG",
     logging_mode="silent",
     async_mode_enabled=True,
