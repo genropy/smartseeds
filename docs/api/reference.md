@@ -42,6 +42,80 @@ def extract_kwargs(
 
 See [extract_kwargs Guide](../user-guide/extract-kwargs.md) for detailed examples.
 
+## smartsuper
+
+```{eval-rst}
+.. autoclass:: smartseeds.smartsuper
+   :members:
+   :special-members: __new__, __init__, __get__, __set_name__
+```
+
+### Class Signature
+
+```python
+class smartsuper:
+    """Decorator for calling superclass methods before or after the decorated method."""
+
+    def __new__(cls, target) -> Union['smartsuper', type]:
+        """Create decorator - detects if decorating a class or method."""
+
+    def __init__(self, target: Any) -> None:
+        """Initialize method decorator (only called for method decoration)."""
+
+    @classmethod
+    def after(cls, method: Callable) -> 'smartsuper':
+        """Decorator variant that calls superclass method AFTER current method."""
+
+    @classmethod
+    def all(cls, target_class: type) -> type:
+        """Apply smartsuper BEFORE to all methods that override a superclass method."""
+```
+
+### Usage Modes
+
+**Method Decorator (BEFORE)**:
+```python
+class Derived(Base):
+    @smartsuper
+    def method(self):
+        pass  # Base.method() called BEFORE this
+```
+
+**Method Decorator (AFTER)**:
+```python
+class Derived(Base):
+    @smartsuper.after
+    def method(self):
+        pass  # Base.method() called AFTER this
+```
+
+**Class Decorator**:
+```python
+@smartsuper
+class Derived(Base):
+    def method(self):
+        pass  # Auto-decorated, Base.method() called BEFORE
+```
+
+### Behavior
+
+- **BEFORE mode** (default): Calls parent method, then current method
+- **AFTER mode**: Calls current method, then parent method
+- **Class mode**: Auto-decorates all overridden methods (BEFORE), skips magic methods
+- **Silent**: Doesn't fail if parent method doesn't exist
+- **Return value**: Returns the decorated method's return value (not parent's)
+
+### Notes
+
+- Magic methods (`__dunder__`) are NOT auto-decorated when using class mode
+- Explicit decoration of magic methods is still possible
+- Uses descriptor protocol for proper method binding
+- `__smartsuper_mode__` attribute tracks "before" or "after" mode
+
+### Examples
+
+See [smartsuper Guide](../user-guide/smartsuper.md) for detailed examples.
+
 ## SmartOptions
 
 ```{eval-rst}

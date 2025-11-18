@@ -14,6 +14,7 @@ SmartSeeds is a lightweight, zero-dependency Python library providing core utili
 ## Features
 
 - **`extract_kwargs`**: Decorator for extracting and grouping keyword arguments by prefix
+- **`smartsuper`**: Decorator for automatic superclass method calls (before/after)
 - **`SmartOptions`**: Intelligent options merging with filtering and defaults
 - **Three flexible styles**: Prefix style, dict style, and boolean activation
 - **Zero dependencies**: Pure Python standard library
@@ -62,6 +63,69 @@ setup_service(
     logging=True,  # → logging_kwargs={} (empty dict for defaults)
     cache=True
 )
+```
+
+### smartsuper Decorator
+
+Automatically call parent class methods before or after your method - perfect for initialization chains and cleanup:
+
+```python
+from smartseeds import smartsuper
+
+# Style 1: Method decorator (BEFORE)
+class Base:
+    def setup(self):
+        print("Base setup")
+
+class Derived(Base):
+    @smartsuper  # Calls Base.setup() BEFORE Derived.setup()
+    def setup(self):
+        print("Derived setup")
+
+d = Derived()
+d.setup()
+# Output:
+# Base setup
+# Derived setup
+
+# Style 2: Method decorator (AFTER)
+class Base:
+    def cleanup(self):
+        print("Base cleanup")
+
+class Derived(Base):
+    @smartsuper.after  # Calls Base.cleanup() AFTER Derived.cleanup()
+    def cleanup(self):
+        print("Derived cleanup")
+
+d = Derived()
+d.cleanup()
+# Output:
+# Derived cleanup
+# Base cleanup
+
+# Style 3: Class decorator (auto-decorate all overrides)
+class Base:
+    def foo(self):
+        print("Base.foo")
+    def bar(self):
+        print("Base.bar")
+
+@smartsuper  # Auto-decorates ALL overridden methods (BEFORE by default)
+class Derived(Base):
+    def foo(self):
+        print("Derived.foo")
+
+    @smartsuper.after  # Explicit AFTER takes precedence
+    def bar(self):
+        print("Derived.bar")
+
+d = Derived()
+d.foo()  # Base.foo → Derived.foo
+d.bar()  # Derived.bar → Base.bar
+
+# Note: Magic methods (__init__, __str__, etc.) are NOT auto-decorated
+# You can still explicitly decorate them if needed
 ```
 
 ### SmartOptions - Intelligent Option Merging

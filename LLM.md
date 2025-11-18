@@ -4,16 +4,19 @@
 
 ## Project Overview
 
-**SmartSeeds** is a zero-dependency Python library providing the `extract_kwargs` decorator for the smart* ecosystem (smartswitch, smartcache, etc.).
+**SmartSeeds** is a zero-dependency Python library providing essential utilities for the smart* ecosystem (smartswitch, smartcache, etc.):
+- `extract_kwargs` decorator for grouping keyword arguments
+- `smartsuper` decorator for automatic parent method calling
+- `SmartOptions` for intelligent option merging
 
 **Repository**: https://github.com/genropy/smartseeds
 **Part of**: [Genro-Libs Toolkit](https://github.com/softwell/genro-libs)
 **License**: MIT
-**Python**: 3.8+
+**Python**: 3.10+
 
-## Core Purpose
+## Core Features
 
-SmartSeeds provides **ONE primary feature**:
+SmartSeeds provides **three primary features**:
 
 ### extract_kwargs Decorator
 
@@ -40,22 +43,75 @@ setup(
 # Cache: {'ttl': 300, 'backend': 'redis'}
 ```
 
+### smartsuper Decorator
+
+Automatically calls parent class methods before or after the decorated method. Supports three usage modes:
+
+**Example**:
+```python
+from smartseeds import smartsuper
+
+# Mode 1: Method decorator (BEFORE)
+class Derived(Base):
+    @smartsuper
+    def setup(self):
+        print("Derived setup")  # Base.setup() called BEFORE this
+
+# Mode 2: Method decorator (AFTER)
+class Derived(Base):
+    @smartsuper.after
+    def cleanup(self):
+        print("Derived cleanup")  # Base.cleanup() called AFTER this
+
+# Mode 3: Class decorator (auto-decorates ALL overrides)
+@smartsuper
+class Derived(Base):
+    def foo(self): pass  # Auto-decorated as BEFORE
+
+    @smartsuper.after  # Explicit AFTER takes precedence
+    def bar(self): pass
+```
+
+**Key Features**:
+- Uses `__new__` to detect class vs method decoration
+- Magic methods (`__dunder__`) are NOT auto-decorated for safety
+- Explicit decoration of magic methods still possible
+- Uses descriptor protocol (`__set_name__`, `__get__`)
+- `__smartsuper_mode__` attribute marks methods as "before" or "after"
+
+### SmartOptions
+
+Intelligent option merging with filtering support.
+
+**Example**:
+```python
+from smartseeds import SmartOptions
+
+opts = SmartOptions(
+    incoming={'timeout': 10, 'retries': None},
+    defaults={'timeout': 5, 'retries': 3},
+    ignore_none=True  # Skip None values from incoming
+)
+print(opts.timeout)  # 10 (from incoming)
+print(opts.retries)  # 3 (from defaults, None ignored)
+```
+
 ## Project Scope
 
 ### ✅ IN SCOPE (Public API)
 
-- `extract_kwargs` decorator ONLY
-- Three calling styles (prefix, dict, boolean)
+- `extract_kwargs` decorator - Group kwargs by prefix
+- `smartsuper` decorator - Automatic parent method calling
+- `SmartOptions` class - Intelligent option merging
+- Three calling styles for extract_kwargs (prefix, dict, boolean)
 - Full type hints
 - Zero dependencies
 
-### ❌ OUT OF SCOPE (Not Public)
+### ❌ OUT OF SCOPE (Internal/Private)
 
 - `dictExtract` - Internal utility only
+- `filtered_dict`, `make_opts` - Internal helpers
 - `Bag` class - Removed from this project
-- Other dict utilities - Not part of SmartSeeds
-
-**IMPORTANT**: User explicitly stated "per ora mi serve solo extract kwargs" - do NOT add other utilities to public API.
 
 ## Key Design Decisions
 
@@ -85,12 +141,15 @@ The current implementation was tested against the original with comprehensive co
 ```
 smartseeds/
 ├── src/smartseeds/
-│   ├── __init__.py          # Exports: extract_kwargs only
-│   ├── decorators.py        # Main decorator implementation
-│   └── dict_utils.py        # Internal: dictExtract utility
+│   ├── __init__.py          # Exports: extract_kwargs, smartsuper, SmartOptions
+│   ├── decorators.py        # extract_kwargs and smartsuper decorators
+│   └── dict_utils.py        # SmartOptions and internal helpers
 │
 ├── tests/
-│   └── test_decorators.py   # 10 tests, 96% coverage
+│   ├── test_decorators.py   # extract_kwargs tests (12 tests)
+│   ├── test_super.py        # smartsuper tests (24 tests)
+│   └── test_dict_utils.py   # SmartOptions tests (15 tests)
+│   # Total: 51 tests, 98% coverage
 │
 ├── docs/                    # Sphinx documentation
 │   ├── conf.py
@@ -113,12 +172,16 @@ smartseeds/
 
 ### Current Status
 
-- **Tests**: 10 tests in `test_decorators.py`
-- **Coverage**: 96% (only defensive unreachable code missing)
+- **Total Tests**: 51 tests across 3 test files
+- **Coverage**: 98% total
+  - `__init__.py`: 100%
+  - `dict_utils.py`: 100%
+  - `decorators.py`: 97% (3 lines defensive code)
 - **All tests passing**: ✅
 
 ### Test Organization
 
+**test_decorators.py** (12 tests):
 ```python
 class TestExtractKwargsBasic:
     """Core functionality - 4 tests"""
@@ -127,7 +190,34 @@ class TestExtractKwargsOptions:
     """Advanced options - 3 tests"""
 
 class TestExtractKwargsEdgeCases:
+    """Edge cases - 5 tests"""
+```
+
+**test_super.py** (24 tests):
+```python
+class TestSmartSuperDecorator:
+    """Method decorator (BEFORE) - 6 tests"""
+
+class TestSmartSuperAfterDecorator:
+    """Method decorator (AFTER) - 5 tests"""
+
+class TestSmartSuperEdgeCases:
     """Edge cases - 3 tests"""
+
+class TestSmartSuperAllDecorator:
+    """Class decorator - 10 tests"""
+```
+
+**test_dict_utils.py** (15 tests):
+```python
+class TestFilteredDict:
+    """filtered_dict helper - 3 tests"""
+
+class TestMakeOpts:
+    """make_opts helper - 6 tests"""
+
+class TestSmartOptions:
+    """SmartOptions class - 6 tests"""
 ```
 
 ### Running Tests
@@ -267,29 +357,54 @@ grep "^version" pyproject.toml
 
 ### src/smartseeds/__init__.py
 
-**Exports**: Only `extract_kwargs`
+**Public API Exports**:
 
 ```python
-from .decorators import extract_kwargs
+__version__ = "0.2.0"
 
-__all__ = ["extract_kwargs"]
+from .decorators import extract_kwargs, smartsuper
+from .dict_utils import SmartOptions
+
+__all__ = [
+    "extract_kwargs",
+    "SmartOptions",
+    "smartsuper",
+]
 ```
 
 ### src/smartseeds/decorators.py
 
-**Main implementation** with:
-- Full type hints (`TypeVar`, `Callable`, etc.)
-- `@wraps` for metadata preservation
-- Support for methods and functions
-- Optional adapter calling
-- Three extraction styles
+**Two main decorators**:
+
+1. **extract_kwargs** (lines 19-119):
+   - Full type hints (`TypeVar`, `Callable`, etc.)
+   - `@wraps` for metadata preservation
+   - Support for methods and functions
+   - Optional adapter calling
+   - Three extraction styles
+
+2. **smartsuper** (lines 122-269):
+   - Class-based descriptor using `__new__`, `__set_name__`, `__get__`
+   - Detects class vs method decoration with `isinstance(target, type)`
+   - `after` classmethod for AFTER behavior
+   - `all` classmethod (explicit class decorator)
+   - `_decorate_class` internal method for class decoration
+   - `__smartsuper_mode__` attribute for tracking decoration type
 
 ### src/smartseeds/dict_utils.py
 
-**Internal utility** for prefix extraction:
-- `dictExtract(mydict, prefix, pop, slice_prefix, is_list)`
-- **Not exported** from package
-- Used by `extract_kwargs` internally
+**Public class and internal helpers**:
+
+1. **SmartOptions** (public):
+   - Intelligent option merging with filtering
+   - `ignore_none` and `ignore_empty` flags
+   - `as_dict()` method for conversion
+   - Dynamic attribute access via `__getattr__`, `__setattr__`, `__delattr__`
+
+2. **Internal helpers** (not exported):
+   - `dictExtract(mydict, prefix, pop, slice_prefix, is_list)` - Prefix extraction
+   - `filtered_dict(source, filter_fn)` - Dict filtering
+   - `make_opts(incoming, defaults, filter_fn, ignore_none, ignore_empty)` - Options factory
 
 ## Git Workflow
 
@@ -441,23 +556,43 @@ class Switcher:
 
 Key feedback that shaped the project:
 
-1. **"per ora mi serve solo extract kwargs"** - Removed Bag and dictExtract from public API
+### v0.1.x - extract_kwargs
+1. **"per ora mi serve solo extract kwargs"** - Initial focus on extract_kwargs only
 2. **"non devo rompere col passato"** - Maintain backwards compatibility
 3. **"tieni solo la nuova emettila in decorators"** - Use improved v2 as main implementation
 4. **"il confronto lo metti in un folder non pubblico"** - Keep comparison private
 5. **"si"** - Proceed with comprehensive documentation
 
+### v0.2.0 - smartsuper and SmartOptions
+6. **"ho pensato che sia meglio chiamarlo smartsuper"** - Renamed from `super` to avoid conflicts
+7. **"ok fai cosi e togli i magic"** - Initial request to include magic methods
+8. **"tu cosa consigli?"** - Asked for recommendation on magic methods
+9. **"si"** - Agreed to exclude magic methods from class decorator for safety
+10. **"arriva al 100"** - Push test coverage to 100% (achieved 98%)
+
 ## For AI Assistants
 
 When working on SmartSeeds:
 
+### General Guidelines
 1. **Always read tests first** - Tests define behavior
-2. **Maintain backwards compatibility** - User requirement
-3. **Only export extract_kwargs** - No other public utilities
-4. **Zero dependencies** - Use only standard library
-5. **Test-first documentation** - Extract from actual tests
-6. **95%+ coverage** - Maintain high test coverage
-7. **Conventional commits** - Use feat/fix/docs prefixes
+2. **Zero dependencies** - Use only Python standard library
+3. **Test-first documentation** - Extract examples from actual tests
+4. **95%+ coverage** - Maintain high test coverage (currently 98%)
+5. **Conventional commits** - Use feat/fix/docs prefixes
+
+### Public API (v0.2.0)
+- **extract_kwargs** - Decorator for grouping kwargs by prefix
+- **smartsuper** - Decorator for automatic parent method calling
+- **SmartOptions** - Class for intelligent option merging
+
+### Internal Utilities (NOT public)
+- `dictExtract`, `filtered_dict`, `make_opts` - Internal helpers only
+
+### Key Implementation Details
+- **extract_kwargs**: Maintains 100% backwards compatibility with Genropy original
+- **smartsuper**: Uses `__new__` for universal class/method decoration, skips magic methods in class mode
+- **SmartOptions**: Uses `SimpleNamespace`-like attribute access with filtering
 
 ## Quick Reference
 

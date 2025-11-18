@@ -212,6 +212,19 @@ class TestSmartSuperAfterDecorator:
 class TestSmartSuperEdgeCases:
     """Test edge cases and special scenarios."""
 
+    def test_smartsuper_init_skips_class_targets(self):
+        """Ensure __init__ is a no-op when decorating classes."""
+
+        class DummyBase:
+            pass
+
+        decorator = object.__new__(smartsuper)
+        smartsuper.__init__(decorator, DummyBase)
+
+        # __init__ should exit immediately (attributes stay unset)
+        assert not hasattr(decorator, "method")
+        assert not hasattr(decorator, "owner")
+
     def test_smartsuper_with_mixed_decorators(self):
         """Test using both @smartsuper and @smartsuper.after in same class."""
         calls = []
@@ -274,6 +287,58 @@ class TestSmartSuperEdgeCases:
 
 class TestSmartSuperAllDecorator:
     """Test @smartsuper.all class decorator."""
+
+    def test_smartsuper_all_skips_manually_marked_methods(self):
+        """Methods tagged as BEFORE/AFTER markers should be left untouched."""
+        calls = []
+
+        class Base:
+            def before(self):
+                calls.append("Base.before")
+
+            def after(self):
+                calls.append("Base.after")
+
+            def auto(self):
+                calls.append("Base.auto")
+
+        def manual_before(self):
+            # Simulate manual BEFORE behavior (parent first)
+            Base.before(self)
+            calls.append("Derived.before")
+
+        manual_before.__smartsuper_mode__ = "before"
+
+        def manual_after(self):
+            # Simulate manual AFTER behavior (parent last)
+            calls.append("Derived.after")
+            Base.after(self)
+
+        manual_after.__smartsuper_mode__ = "after"
+
+        @smartsuper.all
+        class Derived(Base):
+            before = manual_before
+            after = manual_after
+
+            def auto(self):
+                calls.append("Derived.auto")
+
+        d = Derived()
+        d.before()
+        d.after()
+        d.auto()
+
+        # manual_before/after must remain untouched, auto should be decorated
+        assert Derived.__dict__['before'] is manual_before
+        assert Derived.__dict__['after'] is manual_after
+        assert isinstance(Derived.__dict__['auto'], smartsuper)
+
+        assert calls == [
+            "Base.before", "Derived.before",  # manual BEFORE
+            "Derived.after", "Base.after",    # manual AFTER
+            "Base.auto", "Derived.auto",      # auto decorated by smartsuper
+        ]
 
     def test_smartsuper_all_decorates_all_overrides(self):
         """Test that @smartsuper.all decorates all overridden methods."""
