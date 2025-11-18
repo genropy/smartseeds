@@ -4,22 +4,21 @@ Decorators for SmartSeeds.
 Provides utilities for extracting and grouping keyword arguments.
 """
 
+from collections.abc import Callable
 from functools import wraps
-from typing import Callable, Any, Optional, Dict, TypeVar
+from typing import Any, TypeVar
+
 from .dict_utils import dictExtract
 
-
-F = TypeVar('F', bound=Callable[..., Any])
+F = TypeVar("F", bound=Callable[..., Any])
 
 # Constants to avoid recreating dicts
-_DEFAULT_EXTRACT_OPTIONS = {'slice_prefix': True, 'pop': False, 'is_list': False}
-_POP_EXTRACT_OPTIONS = {'slice_prefix': True, 'pop': True, 'is_list': False}
+_DEFAULT_EXTRACT_OPTIONS = {"slice_prefix": True, "pop": False, "is_list": False}
+_POP_EXTRACT_OPTIONS = {"slice_prefix": True, "pop": True, "is_list": False}
 
 
 def extract_kwargs(
-    _adapter: Optional[str] = None,
-    _dictkwargs: Optional[Dict[str, Any]] = None,
-    **extraction_specs: Any
+    _adapter: str | None = None, _dictkwargs: dict[str, Any] | None = None, **extraction_specs: Any
 ) -> Callable[[F], F]:
     """A decorator that extracts ``**kwargs`` into sub-families by prefix.
 
@@ -80,7 +79,7 @@ def extract_kwargs(
 
             # Process each extraction specification
             for extract_key, extract_value in specs_to_use.items():
-                grp_key = f'{extract_key}_kwargs'
+                grp_key = f"{extract_key}_kwargs"
 
                 # Get existing grouped kwargs (if explicitly passed)
                 current = kwargs.pop(grp_key, None)
@@ -102,7 +101,7 @@ def extract_kwargs(
                     extract_options = _DEFAULT_EXTRACT_OPTIONS
 
                 # Extract prefixed kwargs
-                prefix = f'{extract_key}_'
+                prefix = f"{extract_key}_"
                 extracted = dictExtract(kwargs, prefix, **extract_options)
 
                 # Merge extracted kwargs with current
@@ -178,15 +177,15 @@ class smartsuper:
 
         self.method = target
         self.after_call = False
-        self.owner: Optional[type] = None
-        self.name: Optional[str] = None
+        self.owner: type | None = None
+        self.name: str | None = None
         target.__smartsuper_mode__ = "before"
 
     def __set_name__(self, owner: type, name: str) -> None:
         self.owner = owner
         self.name = name
 
-    def __get__(self, obj: Any, objtype: Optional[type] = None) -> Callable[..., Any]:
+    def __get__(self, obj: Any, objtype: type | None = None) -> Callable[..., Any]:
         if obj is None:
             return self
 
@@ -206,7 +205,7 @@ class smartsuper:
         return wrapper
 
     @classmethod
-    def after(cls, method: Callable[..., Any]) -> 'smartsuper':
+    def after(cls, method: Callable[..., Any]) -> "smartsuper":
         """Decorator variant that calls superclass method AFTER current method."""
         instance = object.__new__(cls)
         instance.method = method
@@ -240,7 +239,7 @@ class smartsuper:
         """Internal method to decorate all overridden methods in a class."""
         for name, attr in list(target_class.__dict__.items()):
             # Skip magic methods
-            if name.startswith('__') and name.endswith('__'):
+            if name.startswith("__") and name.endswith("__"):
                 continue
 
             # Skip non-callable

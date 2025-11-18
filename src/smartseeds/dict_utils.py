@@ -4,14 +4,15 @@ Dictionary utilities for SmartSeeds.
 Provides utilities for dict manipulation used across the library.
 """
 
+from collections.abc import Callable, Mapping
 from types import SimpleNamespace
-from typing import Any, Callable, Dict, Mapping, Optional
+from typing import Any
 
 
 def filtered_dict(
-    data: Optional[Mapping[str, Any]],
-    filter_fn: Optional[Callable[[str, Any], bool]] = None,
-) -> Dict[str, Any]:
+    data: Mapping[str, Any] | None,
+    filter_fn: Callable[[str, Any], bool] | None = None,
+) -> dict[str, Any]:
     """
     Return a dict filtered through ``filter_fn``.
 
@@ -28,10 +29,10 @@ def filtered_dict(
 
 
 def make_opts(
-    incoming: Optional[Mapping[str, Any]],
-    defaults: Optional[Mapping[str, Any]] = None,
+    incoming: Mapping[str, Any] | None,
+    defaults: Mapping[str, Any] | None = None,
     *,
-    filter_fn: Optional[Callable[[str, Any], bool]] = None,
+    filter_fn: Callable[[str, Any], bool] | None = None,
     ignore_none: bool = False,
     ignore_empty: bool = False,
 ) -> SimpleNamespace:
@@ -51,13 +52,13 @@ def make_opts(
 
 
 def _merge_kwargs(
-    incoming: Optional[Mapping[str, Any]],
-    defaults: Optional[Mapping[str, Any]],
+    incoming: Mapping[str, Any] | None,
+    defaults: Mapping[str, Any] | None,
     *,
-    filter_fn: Optional[Callable[[str, Any], bool]] = None,
+    filter_fn: Callable[[str, Any], bool] | None = None,
     ignore_none: bool = False,
     ignore_empty: bool = False,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     combined_filter = _compose_filter(filter_fn, ignore_none, ignore_empty)
     merged_defaults = dict(defaults or {})
     filtered_incoming = filtered_dict(incoming, combined_filter)
@@ -65,10 +66,10 @@ def _merge_kwargs(
 
 
 def _compose_filter(
-    filter_fn: Optional[Callable[[str, Any], bool]],
+    filter_fn: Callable[[str, Any], bool] | None,
     ignore_none: bool,
     ignore_empty: bool,
-) -> Optional[Callable[[str, Any], bool]]:
+) -> Callable[[str, Any], bool] | None:
     if not (filter_fn or ignore_none or ignore_empty):
         return None
 
@@ -105,12 +106,12 @@ class SmartOptions(SimpleNamespace):
 
     def __init__(
         self,
-        incoming: Optional[Mapping[str, Any]] = None,
-        defaults: Optional[Mapping[str, Any]] = None,
+        incoming: Mapping[str, Any] | None = None,
+        defaults: Mapping[str, Any] | None = None,
         *,
         ignore_none: bool = False,
         ignore_empty: bool = False,
-        filter_fn: Optional[Callable[[str, Any], bool]] = None,
+        filter_fn: Callable[[str, Any], bool] | None = None,
     ):
         merged = _merge_kwargs(
             incoming,
@@ -122,7 +123,7 @@ class SmartOptions(SimpleNamespace):
         object.__setattr__(self, "_data", dict(merged))
         super().__init__(**merged)
 
-    def as_dict(self) -> Dict[str, Any]:
+    def as_dict(self) -> dict[str, Any]:
         """Return a copy of current options."""
         return dict(self._data)
 
@@ -155,5 +156,11 @@ def dictExtract(mydict, prefix, pop=False, slice_prefix=True, is_list=False):
     lprefix = len(prefix) if slice_prefix else 0
 
     cb = mydict.pop if pop else mydict.get
-    reserved_names = ['class']
-    return dict([(k[lprefix:] if not k[lprefix:] in reserved_names else '_%s' % k[lprefix:], cb(k)) for k in list(mydict.keys()) if k.startswith(prefix)])
+    reserved_names = ["class"]
+    return dict(
+        [
+            (k[lprefix:] if k[lprefix:] not in reserved_names else f"_{k[lprefix:]}", cb(k))
+            for k in list(mydict.keys())
+            if k.startswith(prefix)
+        ]
+    )
