@@ -418,7 +418,6 @@ class smartsuper:
         @smartsuper              - On method: Call parent BEFORE
                                  - On class: Auto-decorate all overrides (BEFORE)
         @smartsuper.after        - On method: Call parent AFTER
-        @smartsuper.all          - Explicit class decorator (same as @smartsuper on class)
 
     The decorator silently ignores if the superclass method doesn't exist.
     When used as class decorator, magic methods (__dunder__) are skipped for safety.
@@ -437,10 +436,6 @@ class smartsuper:
         """Decorator variant that calls superclass method AFTER current method."""
         ...
 
-    @classmethod
-    def all(cls, target_class: type) -> type:
-        """Apply smartsuper BEFORE to all methods that override a superclass method."""
-        ...
 ```
 
 ## See Also
