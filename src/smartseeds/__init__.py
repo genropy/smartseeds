@@ -6,10 +6,11 @@ A lightweight, zero-dependency library providing core utilities for the smart* e
 
 __version__ = "0.2.0"
 
-from .decorators import extract_kwargs
+from .decorators import extract_kwargs, smartsuper
 from .dict_utils import SmartOptions
 
 __all__ = [
     "extract_kwargs",
     "SmartOptions",
+    "smartsuper",
 ]

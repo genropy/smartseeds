@@ -117,3 +117,64 @@ def extract_kwargs(
         return wrapper  # type: ignore
 
     return decorator
+
+
+class smartsuper:
+    """Decorator for calling superclass methods before or after the decorated method.
+
+    Usage:
+        @smartsuper              - Call superclass method BEFORE current method
+        @smartsuper.after        - Call superclass method AFTER current method
+
+    The decorator silently ignores if the superclass method doesn't exist.
+
+    Example:
+        >>> class Base:
+        ...     def setup(self):
+        ...         print("Base setup")
+        ...
+        >>> class Derived(Base):
+        ...     @smartsuper
+        ...     def setup(self):
+        ...         print("Derived setup")
+        ...
+        >>> d = Derived()
+        >>> d.setup()
+        Base setup
+        Derived setup
+    """
+
+    def __init__(self, method: Callable[..., Any]) -> None:
+        self.method = method
+        self.after_call = False
+        self.owner: Optional[type] = None
+
+    def __set_name__(self, owner: type, name: str) -> None:
+        self.name = name
+        self.owner = owner
+
+    def __get__(self, obj: Any, objtype: Optional[type] = None) -> Callable[..., Any]:
+        if obj is None:
+            return self
+
+        def wrapper(*args: Any, **kwargs: Any) -> Any:
+            parent_method = getattr(super(self.owner, obj), self.name, None)
+
+            if not self.after_call:
+                if parent_method:
+                    parent_method(*args, **kwargs)
+                return self.method(obj, *args, **kwargs)
+            else:
+                result = self.method(obj, *args, **kwargs)
+                if parent_method:
+                    parent_method(*args, **kwargs)
+                return result
+
+        return wrapper
+
+    @classmethod
+    def after(cls, method: Callable[..., Any]) -> 'smartsuper':
+        """Decorator variant that calls superclass method AFTER current method."""
+        instance = cls(method)
+        instance.after_call = True
+        return instance
