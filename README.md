@@ -4,7 +4,7 @@
 
 SmartSeeds is a lightweight, zero-dependency Python library providing core utilities for the smart* ecosystem (smartroute, smartasync, etc.). Think of it as the seeds from which smart solutions grow.
 
-[![PyPI version](https://badge.fury.io/py/smartseeds.svg)](https://badge.fury.io/py/smartseeds)
+[![PyPI version](https://img.shields.io/pypi/v/smartseeds.svg)](https://pypi.org/project/smartseeds/)
 [![Tests](https://github.com/genropy/smartseeds/actions/workflows/test.yml/badge.svg)](https://github.com/genropy/smartseeds/actions/workflows/test.yml)
 [![codecov](https://codecov.io/gh/genropy/smartseeds/branch/main/graph/badge.svg)](https://codecov.io/gh/genropy/smartseeds)
 [![Documentation](https://readthedocs.org/projects/smartseeds/badge/?version=latest)](https://smartseeds.readthedocs.io/en/latest/)
@@ -225,7 +225,7 @@ SmartSeeds is part of the Genropy smart* toolkit:
 
 - [smartroute](https://github.com/genropy/smartroute) - Instance-scoped routing engine with plugin architecture
 - [smartasync](https://github.com/genropy/smartasync) - Async utilities
-- [smartpublisher](https://github.com/genropy/smartpublisher) - Pub/sub messaging
+- [smartpublisher](https://github.com/genropy/smartpublisher) - CLI/API framework based on SmartRoute
 
 ## License
 

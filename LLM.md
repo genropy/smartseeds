@@ -537,7 +537,7 @@ sphinx-build -b html docs docs/_build/html -W
 **Genro-Libs Ecosystem**:
 - **smartroute** - Uses `extract_kwargs` for plugin configuration
 - **smartasync** - Async utilities
-- **smartpublisher** - Pub/sub messaging
+- **smartpublisher** - CLI/API framework based on SmartRoute
 - **gtext** - Template generation tool
 - **genro-libs** - Meta-repository (private)
 
