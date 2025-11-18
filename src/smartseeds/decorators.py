@@ -124,11 +124,12 @@ class smartsuper:
 
     Usage:
         @smartsuper              - On method: Call superclass method BEFORE current method
-                                 - On class: Auto-decorate all overridden methods (like .all)
+                                 - On class: Auto-decorate all overridden methods (skips magic methods)
         @smartsuper.after        - Call superclass method AFTER current method
         @smartsuper.all          - Explicit class decorator (equivalent to @smartsuper on class)
 
     The decorator silently ignores if the superclass method doesn't exist.
+    When used as class decorator, magic methods (__dunder__) are skipped for safety.
 
     Example (method decorator):
         >>> class Base:
@@ -217,6 +218,7 @@ class smartsuper:
         """Apply smartsuper BEFORE to all methods that override a superclass method.
 
         Methods explicitly decorated with @smartsuper.after are left unchanged.
+        Magic methods (__dunder__) are automatically skipped for safety.
 
         Example:
             >>> class Base:
@@ -234,6 +236,10 @@ class smartsuper:
     def _decorate_class(cls, target_class: type) -> type:
         """Internal method to decorate all overridden methods in a class."""
         for name, attr in list(target_class.__dict__.items()):
+            # Skip magic methods
+            if name.startswith('__') and name.endswith('__'):
+                continue
+
             # Skip non-callable
             if not callable(attr):
                 continue

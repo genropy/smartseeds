@@ -326,8 +326,8 @@ class TestSmartSuperAllDecorator:
 
         assert calls == ["Base.foo", "Derived.foo", "Derived.bar", "Base.bar"]
 
-    def test_smartsuper_all_includes_magic_methods(self):
-        """Test that @smartsuper.all includes magic methods (no skipping)."""
+    def test_smartsuper_all_skips_magic_methods(self):
+        """Test that @smartsuper.all skips magic methods for safety."""
         calls = []
 
         class Base:
@@ -348,8 +348,8 @@ class TestSmartSuperAllDecorator:
         d = Derived()
         d.normal_method()
 
-        # Both __init__ and normal_method should be auto-decorated
-        assert calls == ["Base.__init__", "Derived.__init__", "Base.normal", "Derived.normal"]
+        # __init__ should NOT be auto-decorated, only normal_method should
+        assert calls == ["Derived.__init__", "Base.normal", "Derived.normal"]
 
     def test_smartsuper_all_skips_non_overrides(self):
         """Test that @smartsuper.all only decorates methods that override."""
