@@ -21,7 +21,7 @@ def extract_kwargs(
     _dictkwargs: Optional[Dict[str, Any]] = None,
     **extraction_specs: Any
 ) -> Callable[[F], F]:
-    """A decorator that extracts **kwargs into sub-families by prefix.
+    """A decorator that extracts ``**kwargs`` into sub-families by prefix.
 
     This decorator allows methods to accept kwargs with prefixes (e.g., `logging_level`,
     `cache_ttl`) and automatically groups them into separate kwargs dictionaries
@@ -30,7 +30,7 @@ def extract_kwargs(
     Args:
         _adapter: Optional name of a method on self that will pre-process kwargs.
                  The adapter method receives kwargs dict and can modify it in-place.
-        _dictkwargs: Optional dict to use instead of **extraction_specs.
+        _dictkwargs: Optional dict to use instead of ``**extraction_specs``.
                     Useful for dynamic extraction specifications.
         **extraction_specs: Extraction specifications where keys are prefix names.
                           Values can be:
@@ -123,10 +123,13 @@ class smartsuper:
     """Decorator for calling superclass methods before or after the decorated method.
 
     Usage:
-        @smartsuper              - On method: Call superclass method BEFORE current method
-                                 - On class: Auto-decorate all overridden methods (skips magic methods)
-        @smartsuper.after        - Call superclass method AFTER current method
-        @smartsuper.all          - Explicit class decorator (equivalent to @smartsuper on class)
+        @smartsuper
+            On method: Call superclass method BEFORE current method
+            On class: Auto-decorate all overridden methods (skips magic methods)
+        @smartsuper.after
+            Call superclass method AFTER current method
+        @smartsuper.all
+            Explicit class decorator (equivalent to @smartsuper on class)
 
     The decorator silently ignores if the superclass method doesn't exist.
     When used as class decorator, magic methods (__dunder__) are skipped for safety.

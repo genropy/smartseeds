@@ -1,3 +1,7 @@
+<div align="center">
+  <img src="docs/assets/logo.png" alt="SmartSeeds Logo" width="200"/>
+</div>
+
 # SmartSeeds 🌱
 
 **Essential utilities that grow smart solutions**
