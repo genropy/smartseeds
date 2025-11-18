@@ -182,11 +182,86 @@ sphinx-build -b html . _build/html
 
 ### Release New Version
 
-1. **Update version** in `src/smartseeds/__init__.py`
-2. **Update CHANGELOG.md**
-3. **Tag release**: `git tag v0.X.0`
-4. **Push tag**: `git push origin v0.X.0`
-5. **GitHub Actions** handles PyPI publish
+**CRITICAL PRE-RELEASE CHECKLIST**
+
+Before creating ANY release, you MUST verify version synchronization:
+
+```bash
+# 1. Check __init__.py version
+grep "__version__" src/smartseeds/__init__.py
+
+# 2. Check pyproject.toml version
+grep "^version" pyproject.toml
+
+# 3. BOTH MUST MATCH! If not, build will publish wrong version
+```
+
+**Why this matters**: The setuptools build process uses `pyproject.toml` as the authoritative source for package metadata. If `__init__.py` and `pyproject.toml` have different versions, PyPI will receive the version from `pyproject.toml`, NOT from `__init__.py`.
+
+**Step-by-Step Release Process**:
+
+1. **Update BOTH version locations**:
+   ```bash
+   # File 1: src/smartseeds/__init__.py
+   __version__ = "0.X.0"
+
+   # File 2: pyproject.toml
+   version = "0.X.0"  # ← MUST match __init__.py
+   ```
+
+2. **Update CHANGELOG.md** with release notes
+
+3. **Commit version updates**:
+   ```bash
+   git add src/smartseeds/__init__.py pyproject.toml CHANGELOG.md
+   git commit -m "build: bump version to 0.X.0"
+   git push origin main
+   ```
+
+4. **Create and push annotated tag**:
+   ```bash
+   git tag -a v0.X.0 -m "Release v0.X.0: Brief description"
+   git push origin v0.X.0
+   ```
+
+5. **Verify build**:
+   ```bash
+   # Check workflow ran successfully
+   gh run list --limit 1
+
+   # Check build logs show correct version
+   gh run view <run-id> --log | grep "creating smartseeds"
+   # Should see: "creating smartseeds-0.X.0"
+
+   # Check PyPI shows correct version
+   pip index versions smartseeds
+   # Should see: "Available versions: 0.X.0, ..."
+   ```
+
+**If Wrong Version Published**:
+
+1. Delete the tag:
+   ```bash
+   git tag -d v0.X.0
+   git push origin :refs/tags/v0.X.0
+   ```
+
+2. Fix version in BOTH files (if not already correct)
+
+3. Commit, recreate tag, and push:
+   ```bash
+   git add src/smartseeds/__init__.py pyproject.toml
+   git commit -m "build: fix version to 0.X.0"
+   git push origin main
+   git tag -a v0.X.0 -m "Release v0.X.0"
+   git push origin v0.X.0
+   ```
+
+**AI Assistant Notes**:
+- ALWAYS check both version locations before proceeding
+- NEVER skip the verification step
+- If versions don't match, FIX before creating tag
+- Use grep commands to verify, don't just read files visually
 
 ## Important Files
 
@@ -394,10 +469,14 @@ pytest --cov=smartseeds
 # Documentation
 sphinx-build -b html docs docs/_build/html
 
-# Release (maintainers)
-# 1. Update __version__ in __init__.py
-# 2. git tag v0.X.0
-# 3. git push origin v0.X.0
+# Release (maintainers) - MUST verify BOTH versions match first!
+# 1. Check: grep "__version__" src/smartseeds/__init__.py
+# 2. Check: grep "^version" pyproject.toml
+# 3. Update BOTH files to same version
+# 4. git commit -m "build: bump version to 0.X.0"
+# 5. git tag -a v0.X.0 -m "Release v0.X.0"
+# 6. git push origin main && git push origin v0.X.0
+# 7. Verify: gh run view <id> --log | grep "creating smartseeds"
 ```
 
 ---

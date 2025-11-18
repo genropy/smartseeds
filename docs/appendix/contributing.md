@@ -261,20 +261,44 @@ Then create PR on GitHub with:
 
 (For maintainers only)
 
-### 1. Update Version
+### Pre-Release Checklist
 
-Edit `src/smartseeds/__init__.py`:
+**CRITICAL**: Before creating a release, verify ALL version numbers are synchronized:
 
+```bash
+# 1. Check __init__.py version
+grep "__version__" src/smartseeds/__init__.py
+
+# 2. Check pyproject.toml version
+grep "^version" pyproject.toml
+
+# 3. Both MUST match! If not, build will publish wrong version
+```
+
+### Step-by-Step Release Process
+
+#### 1. Update Version Numbers
+
+**IMPORTANT**: Update version in BOTH files:
+
+**File 1: `src/smartseeds/__init__.py`**
 ```python
 __version__ = "0.2.0"
 ```
 
-### 2. Update Changelog
+**File 2: `pyproject.toml`**
+```toml
+[project]
+name = "smartseeds"
+version = "0.2.0"  # ← MUST match __init__.py
+```
+
+#### 2. Update Changelog
 
 Add release notes to `CHANGELOG.md`:
 
 ```markdown
-## [0.2.0] - 2025-11-11
+## [0.2.0] - 2025-11-16
 
 ### Added
 - New feature X
@@ -284,19 +308,81 @@ Add release notes to `CHANGELOG.md`:
 - Bug in Z
 ```
 
-### 3. Tag Release
+#### 3. Commit Version Updates
 
 ```bash
-git tag v0.2.0
+git add src/smartseeds/__init__.py pyproject.toml CHANGELOG.md
+git commit -m "build: bump version to 0.2.0"
+git push origin main
+```
+
+#### 4. Create and Push Tag
+
+```bash
+# Create annotated tag
+git tag -a v0.2.0 -m "Release v0.2.0: Brief description"
+
+# Push tag (triggers CI/CD)
 git push origin v0.2.0
 ```
 
-### 4. Build and Publish
+#### 5. Verify Build
 
-```bash
-python -m build
-python -m twine upload dist/*
-```
+After pushing the tag:
+
+1. **Check GitHub Actions**: Verify workflow completes successfully
+2. **Check build logs**: Confirm correct version was built
+   ```bash
+   gh run list --limit 1
+   gh run view <run-id> --log | grep "creating smartseeds"
+   # Should see: "creating smartseeds-0.2.0"
+   ```
+3. **Check PyPI**: Verify correct version was published
+   ```bash
+   pip index versions smartseeds
+   # Should see: "Available versions: 0.2.0, ..."
+   ```
+
+### Troubleshooting Releases
+
+#### Wrong Version Published
+
+If wrong version was published:
+
+1. **Delete the tag**:
+   ```bash
+   git tag -d v0.2.0
+   git push origin :refs/tags/v0.2.0
+   ```
+
+2. **Fix version in both files**:
+   - `src/smartseeds/__init__.py`
+   - `pyproject.toml`
+
+3. **Commit, recreate tag, and push**:
+   ```bash
+   git add src/smartseeds/__init__.py pyproject.toml
+   git commit -m "build: fix version to 0.2.0"
+   git push origin main
+   git tag -a v0.2.0 -m "Release v0.2.0"
+   git push origin v0.2.0
+   ```
+
+#### Release Failed
+
+If GitHub Actions workflow fails:
+
+1. Check workflow logs: `gh run view <run-id> --log`
+2. Fix the issue
+3. Delete and recreate the tag (see above)
+
+### Version Management Best Practices
+
+1. **Always update both version locations** (`__init__.py` and `pyproject.toml`)
+2. **Verify versions match** before pushing tag
+3. **Use annotated tags** (`-a` flag) for releases
+4. **Check build logs** to confirm correct version
+5. **Never skip verification** - it catches mistakes early
 
 ## Getting Help
 
