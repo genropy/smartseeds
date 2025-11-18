@@ -270,3 +270,231 @@ class TestSmartSuperEdgeCases:
         # Accessing on instance returns the wrapper
         d = Derived()
         assert callable(d.method)
+
+
+class TestSmartSuperAllDecorator:
+    """Test @smartsuper.all class decorator."""
+
+    def test_smartsuper_all_decorates_all_overrides(self):
+        """Test that @smartsuper.all decorates all overridden methods."""
+        calls = []
+
+        class Base:
+            def foo(self):
+                calls.append("Base.foo")
+
+            def bar(self):
+                calls.append("Base.bar")
+
+        @smartsuper.all
+        class Derived(Base):
+            def foo(self):
+                calls.append("Derived.foo")
+
+            def bar(self):
+                calls.append("Derived.bar")
+
+        d = Derived()
+        d.foo()
+        d.bar()
+
+        assert calls == ["Base.foo", "Derived.foo", "Base.bar", "Derived.bar"]
+
+    def test_smartsuper_all_respects_explicit_after(self):
+        """Test that @smartsuper.all respects explicit @smartsuper.after."""
+        calls = []
+
+        class Base:
+            def foo(self):
+                calls.append("Base.foo")
+
+            def bar(self):
+                calls.append("Base.bar")
+
+        @smartsuper.all
+        class Derived(Base):
+            def foo(self):
+                calls.append("Derived.foo")
+
+            @smartsuper.after
+            def bar(self):
+                calls.append("Derived.bar")
+
+        d = Derived()
+        d.foo()
+        d.bar()
+
+        assert calls == ["Base.foo", "Derived.foo", "Derived.bar", "Base.bar"]
+
+    def test_smartsuper_all_includes_magic_methods(self):
+        """Test that @smartsuper.all includes magic methods (no skipping)."""
+        calls = []
+
+        class Base:
+            def __init__(self):
+                calls.append("Base.__init__")
+
+            def normal_method(self):
+                calls.append("Base.normal")
+
+        @smartsuper.all
+        class Derived(Base):
+            def __init__(self):
+                calls.append("Derived.__init__")
+
+            def normal_method(self):
+                calls.append("Derived.normal")
+
+        d = Derived()
+        d.normal_method()
+
+        # Both __init__ and normal_method should be auto-decorated
+        assert calls == ["Base.__init__", "Derived.__init__", "Base.normal", "Derived.normal"]
+
+    def test_smartsuper_all_skips_non_overrides(self):
+        """Test that @smartsuper.all only decorates methods that override."""
+        calls = []
+
+        class Base:
+            def foo(self):
+                calls.append("Base.foo")
+
+        @smartsuper.all
+        class Derived(Base):
+            def foo(self):
+                calls.append("Derived.foo")
+
+            def bar(self):
+                calls.append("Derived.bar")
+
+        d = Derived()
+        d.foo()
+        d.bar()
+
+        # foo should be decorated (overrides), bar should not (new method)
+        assert calls == ["Base.foo", "Derived.foo", "Derived.bar"]
+
+    def test_smartsuper_all_no_double_decoration(self):
+        """Test that @smartsuper.all doesn't double-decorate manual decorations."""
+        calls = []
+
+        class Base:
+            def foo(self):
+                calls.append("Base.foo")
+
+            def bar(self):
+                calls.append("Base.bar")
+
+        @smartsuper.all
+        class Derived(Base):
+            @smartsuper
+            def foo(self):
+                calls.append("Derived.foo")
+
+            def bar(self):
+                calls.append("Derived.bar")
+
+        d = Derived()
+        d.foo()
+        d.bar()
+
+        # Should call each parent exactly once
+        assert calls == ["Base.foo", "Derived.foo", "Base.bar", "Derived.bar"]
+
+    def test_smartsuper_all_with_multilevel_inheritance(self):
+        """Test @smartsuper.all with multiple inheritance levels."""
+        calls = []
+
+        class Base:
+            def method(self):
+                calls.append("Base")
+
+        class Middle(Base):
+            def method(self):
+                calls.append("Middle")
+
+        @smartsuper.all
+        class Derived(Middle):
+            def method(self):
+                calls.append("Derived")
+
+        d = Derived()
+        d.method()
+
+        # Should call Middle (immediate parent), Middle then calls Base
+        assert calls == ["Middle", "Derived"]
+
+    def test_smartsuper_all_skips_properties(self):
+        """Test that @smartsuper.all skips properties and attributes."""
+        calls = []
+
+        class Base:
+            def foo(self):
+                calls.append("Base.foo")
+
+        @smartsuper.all
+        class Derived(Base):
+            value = 42
+
+            def foo(self):
+                calls.append("Derived.foo")
+
+        d = Derived()
+        d.foo()
+
+        # Should work normally, skipping the 'value' attribute
+        assert calls == ["Base.foo", "Derived.foo"]
+        assert d.value == 42
+
+    def test_smartsuper_as_class_decorator(self):
+        """Test that @smartsuper on a class works like @smartsuper.all."""
+        calls = []
+
+        class Base:
+            def foo(self):
+                calls.append("Base.foo")
+
+            def bar(self):
+                calls.append("Base.bar")
+
+        @smartsuper
+        class Derived(Base):
+            def foo(self):
+                calls.append("Derived.foo")
+
+            def bar(self):
+                calls.append("Derived.bar")
+
+        d = Derived()
+        d.foo()
+        d.bar()
+
+        # Both methods should be auto-decorated with BEFORE behavior
+        assert calls == ["Base.foo", "Derived.foo", "Base.bar", "Derived.bar"]
+
+    def test_smartsuper_class_decorator_with_explicit_after(self):
+        """Test that @smartsuper on class respects explicit @smartsuper.after."""
+        calls = []
+
+        class Base:
+            def foo(self):
+                calls.append("Base.foo")
+
+            def bar(self):
+                calls.append("Base.bar")
+
+        @smartsuper
+        class Derived(Base):
+            def foo(self):
+                calls.append("Derived.foo")
+
+            @smartsuper.after
+            def bar(self):
+                calls.append("Derived.bar")
+
+        d = Derived()
+        d.foo()
+        d.bar()
+
+        # foo should be BEFORE, bar should be AFTER
+        assert calls == ["Base.foo", "Derived.foo", "Derived.bar", "Base.bar"]

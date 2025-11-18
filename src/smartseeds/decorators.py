@@ -123,12 +123,14 @@ class smartsuper:
     """Decorator for calling superclass methods before or after the decorated method.
 
     Usage:
-        @smartsuper              - Call superclass method BEFORE current method
+        @smartsuper              - On method: Call superclass method BEFORE current method
+                                 - On class: Auto-decorate all overridden methods (like .all)
         @smartsuper.after        - Call superclass method AFTER current method
+        @smartsuper.all          - Explicit class decorator (equivalent to @smartsuper on class)
 
     The decorator silently ignores if the superclass method doesn't exist.
 
-    Example:
+    Example (method decorator):
         >>> class Base:
         ...     def setup(self):
         ...         print("Base setup")
@@ -142,16 +144,43 @@ class smartsuper:
         >>> d.setup()
         Base setup
         Derived setup
+
+    Example (class decorator):
+        >>> class Base:
+        ...     def foo(self): pass
+        ...     def bar(self): pass
+        ...
+        >>> @smartsuper
+        ... class Derived(Base):
+        ...     def foo(self): pass  # Will call Base.foo() before
+        ...     def bar(self): pass  # Will call Base.bar() before
     """
 
-    def __init__(self, method: Callable[..., Any]) -> None:
-        self.method = method
+    def __new__(cls, target):
+        """Create decorator - detects if decorating a class or method."""
+        # If decorating a class, apply class decoration
+        if isinstance(target, type):
+            return cls._decorate_class(target)
+
+        # Otherwise, create method decorator instance
+        instance = super().__new__(cls)
+        return instance
+
+    def __init__(self, target: Any) -> None:
+        """Initialize method decorator (only called for method decoration)."""
+        # Skip if this was a class decoration (target is already processed)
+        if isinstance(target, type):
+            return
+
+        self.method = target
         self.after_call = False
         self.owner: Optional[type] = None
+        self.name: Optional[str] = None
+        target.__smartsuper_mode__ = "before"
 
     def __set_name__(self, owner: type, name: str) -> None:
-        self.name = name
         self.owner = owner
+        self.name = name
 
     def __get__(self, obj: Any, objtype: Optional[type] = None) -> Callable[..., Any]:
         if obj is None:
@@ -175,6 +204,60 @@ class smartsuper:
     @classmethod
     def after(cls, method: Callable[..., Any]) -> 'smartsuper':
         """Decorator variant that calls superclass method AFTER current method."""
-        instance = cls(method)
+        instance = object.__new__(cls)
+        instance.method = method
         instance.after_call = True
+        instance.owner = None
+        instance.name = None
+        method.__smartsuper_mode__ = "after"
         return instance
+
+    @classmethod
+    def all(cls, target_class: type) -> type:
+        """Apply smartsuper BEFORE to all methods that override a superclass method.
+
+        Methods explicitly decorated with @smartsuper.after are left unchanged.
+
+        Example:
+            >>> class Base:
+            ...     def foo(self): pass
+            ...     def bar(self): pass
+            ...
+            >>> @smartsuper.all
+            ... class Derived(Base):
+            ...     def foo(self): pass  # Will call Base.foo() before
+            ...     def bar(self): pass  # Will call Base.bar() before
+        """
+        return cls._decorate_class(target_class)
+
+    @classmethod
+    def _decorate_class(cls, target_class: type) -> type:
+        """Internal method to decorate all overridden methods in a class."""
+        for name, attr in list(target_class.__dict__.items()):
+            # Skip non-callable
+            if not callable(attr):
+                continue
+
+            # Skip methods already decorated with smartsuper.after
+            if getattr(attr, "__smartsuper_mode__", None) == "after":
+                continue
+
+            # Check if this method overrides a superclass method
+            for base in target_class.__mro__[1:]:
+                if hasattr(base, name):
+                    # Don't decorate twice if already manually decorated
+                    if getattr(attr, "__smartsuper_mode__", None) == "before":
+                        break
+
+                    # Automatically decorate as BEFORE
+                    decorated = object.__new__(cls)
+                    decorated.method = attr
+                    decorated.after_call = False
+                    decorated.owner = None
+                    decorated.name = None
+                    attr.__smartsuper_mode__ = "before"
+                    decorated.__set_name__(target_class, name)
+                    setattr(target_class, name, decorated)
+                    break
+
+        return target_class
