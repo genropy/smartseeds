@@ -21,6 +21,7 @@ SmartSeeds is a lightweight, zero-dependency Python library providing core utili
 
 - **`extract_kwargs`**: Decorator for extracting and grouping keyword arguments by prefix
 - **`SmartOptions`**: Intelligent options merging with filtering and defaults
+- **`safe_is_instance`**: Check instance types by class name without importing
 - **Three flexible styles**: Prefix style, dict style, and boolean activation
 - **Zero dependencies**: Pure Python standard library
 - **Full type hints**: Complete typing support
@@ -106,6 +107,42 @@ print(opts.name)  # 'default' (default kept)
 
 # Convert back to dict
 config_dict = opts.as_dict()
+```
+
+### safe_is_instance - Type Checking Without Imports
+
+Check if an object is an instance of a class using only the class name string, without importing the class. Perfect for avoiding circular imports:
+
+```python
+from smartseeds import safe_is_instance
+
+# Check instance without importing the class
+class MyModel:
+    pass
+
+obj = MyModel()
+
+# Traditional isinstance requires import
+# from mypackage.models import BaseModel
+# isinstance(obj, BaseModel)  # Circular import risk!
+
+# safe_is_instance uses string class name - no import needed
+assert safe_is_instance(obj, f"{MyModel.__module__}.{MyModel.__qualname__}")
+
+# Works with inheritance
+class Base:
+    pass
+
+class Derived(Base):
+    pass
+
+obj = Derived()
+assert safe_is_instance(obj, f"{Derived.__module__}.{Derived.__qualname__}")
+assert safe_is_instance(obj, f"{Base.__module__}.{Base.__qualname__}")  # Parent class!
+
+# Works with builtins
+assert safe_is_instance(42, "builtins.int")
+assert safe_is_instance("hello", "builtins.str")
 ```
 
 ### Use in smart* Ecosystem

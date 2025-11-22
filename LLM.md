@@ -7,6 +7,7 @@
 **SmartSeeds** is a zero-dependency Python library providing essential utilities for the smart* ecosystem (smartroute, smartasync, etc.):
 - `extract_kwargs` decorator for grouping keyword arguments
 - `SmartOptions` for intelligent option merging
+- `safe_is_instance` for type checking without imports
 
 **Repository**: https://github.com/genropy/smartseeds
 **Part of**: [Genro-Libs Toolkit](https://github.com/softwell/genro-libs)
@@ -15,7 +16,7 @@
 
 ## Core Features
 
-SmartSeeds provides **two primary features**:
+SmartSeeds provides **three primary features**:
 
 ### extract_kwargs Decorator
 
@@ -59,12 +60,37 @@ print(opts.timeout)  # 10 (from incoming)
 print(opts.retries)  # 3 (from defaults, None ignored)
 ```
 
+### safe_is_instance
+
+Check if an object is an instance of a class using only the class name string, without importing the class.
+
+**Example**:
+```python
+from smartseeds import safe_is_instance
+
+class Base:
+    pass
+
+class Derived(Base):
+    pass
+
+obj = Derived()
+
+# Check without importing - perfect for avoiding circular imports
+assert safe_is_instance(obj, f"{Derived.__module__}.{Derived.__qualname__}")
+assert safe_is_instance(obj, f"{Base.__module__}.{Base.__qualname__}")  # Parent!
+
+# Works with builtins
+assert safe_is_instance(42, "builtins.int")
+```
+
 ## Project Scope
 
 ### ✅ IN SCOPE (Public API)
 
 - `extract_kwargs` decorator - Group kwargs by prefix
 - `SmartOptions` class - Intelligent option merging
+- `safe_is_instance` function - Type checking without imports
 - Three calling styles for extract_kwargs (prefix, dict, boolean)
 - Full type hints
 - Zero dependencies
@@ -103,14 +129,16 @@ The current implementation was tested against the original with comprehensive co
 ```
 smartseeds/
 ├── src/smartseeds/
-│   ├── __init__.py          # Exports: extract_kwargs, SmartOptions
+│   ├── __init__.py          # Exports: extract_kwargs, SmartOptions, safe_is_instance
 │   ├── decorators.py        # extract_kwargs decorator
-│   └── dict_utils.py        # SmartOptions and internal helpers
+│   ├── dict_utils.py        # SmartOptions and internal helpers
+│   └── typeutils.py         # safe_is_instance function
 │
 ├── tests/
-│   ├── test_decorators.py   # extract_kwargs tests
-│   └── test_dict_utils.py   # SmartOptions tests
-│   # Total: 27 tests, 100% coverage
+│   ├── test_decorators.py   # extract_kwargs tests (12 tests)
+│   ├── test_dict_utils.py   # SmartOptions tests (15 tests)
+│   └── test_typeutils.py    # safe_is_instance tests (13 tests)
+│   # Total: 40 tests, 100% coverage
 │
 ├── docs/                    # Sphinx documentation
 │   ├── conf.py
@@ -133,11 +161,12 @@ smartseeds/
 
 ### Current Status
 
-- **Total Tests**: 27 tests across 2 test files
+- **Total Tests**: 40 tests across 3 test files
 - **Coverage**: 100% total
   - `__init__.py`: 100%
   - `decorators.py`: 100%
   - `dict_utils.py`: 100%
+  - `typeutils.py`: 100%
 - **All tests passing**: ✅
 
 ### Test Organization
@@ -164,6 +193,15 @@ class TestMakeOpts:
 
 class TestSmartOptions:
     """SmartOptions class - 6 tests"""
+```
+
+**test_typeutils.py** (13 tests):
+```python
+class TestSafeIsInstance:
+    """Core functionality - 10 tests"""
+
+class TestSafeIsInstanceEdgeCases:
+    """Edge cases - 3 tests"""
 ```
 
 ### Running Tests
@@ -306,14 +344,16 @@ grep "^version" pyproject.toml
 **Public API Exports**:
 
 ```python
-__version__ = "0.2.0"
+__version__ = "0.3.1"
 
 from .decorators import extract_kwargs
 from .dict_utils import SmartOptions
+from .typeutils import safe_is_instance
 
 __all__ = [
     "extract_kwargs",
     "SmartOptions",
+    "safe_is_instance",
 ]
 ```
 
@@ -327,6 +367,20 @@ __all__ = [
    - Support for methods and functions
    - Optional adapter calling
    - Three extraction styles
+
+### src/smartseeds/typeutils.py
+
+**Type checking utilities**:
+
+1. **safe_is_instance**:
+   - Check instance without importing class
+   - Uses fully qualified class names (module.ClassName)
+   - Supports inheritance via MRO inspection
+   - LRU cached for performance
+   - Perfect for avoiding circular imports
+
+2. **_mro_fullnames** (internal):
+   - Cached helper for MRO class name extraction
 
 ### src/smartseeds/dict_utils.py
 
@@ -518,16 +572,19 @@ When working on SmartSeeds:
 4. **95%+ coverage** - Maintain high test coverage (currently 98%)
 5. **Conventional commits** - Use feat/fix/docs prefixes
 
-### Public API (v0.2.0)
+### Public API (v0.3.1)
 - **extract_kwargs** - Decorator for grouping kwargs by prefix
 - **SmartOptions** - Class for intelligent option merging
+- **safe_is_instance** - Function for type checking without imports
 
 ### Internal Utilities (NOT public)
-- `dictExtract`, `filtered_dict`, `make_opts` - Internal helpers only
+- `dictExtract`, `filtered_dict`, `make_opts` - Internal dict helpers
+- `_mro_fullnames` - Internal type checking helper
 
 ### Key Implementation Details
 - **extract_kwargs**: Maintains 100% backwards compatibility with Genropy original
 - **SmartOptions**: Uses `SimpleNamespace`-like attribute access with filtering
+- **safe_is_instance**: Uses MRO inspection with LRU caching for performance
 
 ## Quick Reference
 
