@@ -93,6 +93,92 @@ class SmartOptions(SimpleNamespace):
 
 See [SmartOptions Guide](../user-guide/smart-options.md) for detailed examples.
 
+## safe_is_instance
+
+```{eval-rst}
+.. autofunction:: smartseeds.safe_is_instance
+```
+
+### Function Signature
+
+```python
+def safe_is_instance(obj: Any, class_name: str) -> bool
+```
+
+### Parameters
+
+**obj** : `Any`
+: Object to check
+
+**class_name** : `str`
+: Fully qualified class name (e.g., "builtins.int", "package.module.ClassName")
+
+### Returns
+
+**bool**
+: True if obj is an instance of the class, False otherwise
+
+### Examples
+
+See [safe_is_instance Guide](../user-guide/safe-is-instance.md) for detailed examples.
+
+## ASCII Table
+
+### render_ascii_table
+
+```{eval-rst}
+.. autofunction:: smartseeds.ascii_table.render_ascii_table
+```
+
+### Function Signature
+
+```python
+def render_ascii_table(data: dict, max_width: Optional[int] = None) -> str
+```
+
+### Parameters
+
+**data** : `dict`
+: Table structure containing:
+  - `headers`: List of column definitions (name, type, format, align, hierarchy)
+  - `rows`: List of row data (list of values)
+  - `title` (optional): Table title
+  - `max_width` (optional): Maximum table width in characters
+
+**max_width** : `Optional[int]`
+: Override max_width from data dict. Default: use data's max_width or 120
+
+### Returns
+
+**str**
+: Formatted ASCII table with borders and alignment
+
+### render_markdown_table
+
+```{eval-rst}
+.. autofunction:: smartseeds.ascii_table.render_markdown_table
+```
+
+### Function Signature
+
+```python
+def render_markdown_table(data: dict) -> str
+```
+
+### Parameters
+
+**data** : `dict`
+: Table structure (same format as render_ascii_table)
+
+### Returns
+
+**str**
+: Markdown-formatted table
+
+### Examples
+
+See [ASCII Table Guide](../user-guide/ascii-table.md) for detailed examples.
+
 ## Helper Functions
 
 ### filtered_dict

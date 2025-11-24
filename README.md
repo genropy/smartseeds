@@ -22,6 +22,7 @@ SmartSeeds is a lightweight, zero-dependency Python library providing core utili
 - **`extract_kwargs`**: Decorator for extracting and grouping keyword arguments by prefix
 - **`SmartOptions`**: Intelligent options merging with filtering and defaults
 - **`safe_is_instance`**: Check instance types by class name without importing
+- **`ascii_table`**: Generate beautiful ASCII and Markdown tables with formatting, hierarchies, and type support
 - **Three flexible styles**: Prefix style, dict style, and boolean activation
 - **Zero dependencies**: Pure Python standard library
 - **Full type hints**: Complete typing support
@@ -144,6 +145,55 @@ assert safe_is_instance(obj, f"{Base.__module__}.{Base.__qualname__}")  # Parent
 assert safe_is_instance(42, "builtins.int")
 assert safe_is_instance("hello", "builtins.str")
 ```
+
+### ascii_table - Beautiful Tables with Zero Dependencies
+
+Generate formatted ASCII and Markdown tables with type-aware formatting, hierarchies, and text wrapping:
+
+```python
+from smartseeds import render_ascii_table, render_markdown_table
+
+# Create a formatted table
+data = {
+    "title": "Sales Report",
+    "headers": [
+        {"name": "Region", "type": "str", "align": "left"},
+        {"name": "Revenue", "type": "float", "format": ".2f", "align": "right"},
+        {"name": "Active", "type": "bool", "align": "center"},
+        {"name": "Updated", "type": "date", "format": "dd/mm/yyyy"}
+    ],
+    "rows": [
+        ["North", 125430.50, "yes", "2025-11-24"],
+        ["South", 98765.25, "no", "2025-11-23"]
+    ]
+}
+
+print(render_ascii_table(data))
+# Output:
+#                     Sales Report
+# +--------+-----------+--------+------------+
+# | Region |   Revenue | Active | Updated    |
+# +--------+-----------+--------+------------+
+# | North  | 125430.50 |  true  | 24/11/2025 |
+# +--------+-----------+--------+------------+
+# | South  |  98765.25 |  false | 23/11/2025 |
+# +--------+-----------+--------+------------+
+
+# Export to Markdown
+print(render_markdown_table(data))
+# Output:
+# | Region | Revenue | Active | Updated |
+# | --- | --- | --- | --- |
+# | North | 125430.50 | true | 24/11/2025 |
+# | South | 98765.25 | false | 23/11/2025 |
+```
+
+Features:
+- **Type formatting**: str, int, float, bool, date, datetime with custom formats
+- **Hierarchical data**: Automatic indentation for tree structures
+- **Text wrapping**: Handles long content with configurable max width
+- **ANSI colors**: Terminal colors don't affect layout
+- **Markdown export**: Generate documentation-ready tables
 
 ### Use in smart* Ecosystem
 

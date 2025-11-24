@@ -12,6 +12,8 @@ SmartSeeds is a lightweight, zero-dependency Python library providing core utili
 
 - **`extract_kwargs`** - Decorator for extracting and grouping keyword arguments by prefix
 - **`SmartOptions`** - Intelligent options merging with filtering and defaults
+- **`safe_is_instance`** - Type checking without imports
+- **`ascii_table`** - Beautiful ASCII and Markdown tables with formatting and hierarchies
 - **Three flexible styles** - Prefix style, dict style, and boolean activation
 - **Zero dependencies** - Pure Python standard library only
 - **Full type hints** - Complete typing support
@@ -57,6 +59,8 @@ user-guide/quickstart
 
 user-guide/extract-kwargs
 user-guide/smart-options
+user-guide/safe-is-instance
+user-guide/ascii-table
 user-guide/best-practices
 ```
 
