@@ -151,6 +151,12 @@ class TestFormatCell:
         coldef = {"type": "datetime"}
         assert format_cell("not_a_datetime", coldef) == "not_a_datetime"
 
+    def test_format_unknown_type(self):
+        """Unknown type falls back to string conversion."""
+        coldef = {"type": "unknown_type"}
+        assert format_cell("test_value", coldef) == "test_value"
+        assert format_cell(12345, coldef) == "12345"
+
 
 class TestTreeOperations:
     """Test hierarchical tree operations."""
